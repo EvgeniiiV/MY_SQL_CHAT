@@ -12,7 +12,7 @@ using namespace std;
 #include <sys/socket.h>
 #endif
 
-#define MESSAGE_LENGTH 1024 // Максимальный размер буфера для данных
+#define MESSAGE_LENGTH 1024 // РњР°РєСЃРёРјР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ Р±СѓС„РµСЂР° РґР»СЏ РґР°РЅРЅС‹С…
 extern char ch_message[MESSAGE_LENGTH];
 extern SOCKET connection;
 
@@ -94,4 +94,15 @@ string get_login(map<int, string>UC, int connection)
 }
 
 
-
+int get_con(map<int, string>UC, string login)
+{
+    int con;
+    map<int, string >::iterator it;
+    for (it = UC.begin(); it != UC.end(); ++it)
+        if (it->second == login)
+        {
+            con = it->first;
+            return con;
+        }
+    return 0;
+}
