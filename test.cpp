@@ -40,6 +40,7 @@ SOCKET connection;
 int activity, sd, max_sd, max_clients = 5;
 #else
 int socket_file_descriptor, connection, bind_status, connection_status, activity, sd, max_sd, max_clients = 5;
+int opt = 1; 
 #endif
 
 vector <int>connections;//to store socket descriptors
