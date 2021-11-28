@@ -29,7 +29,7 @@ using namespace std;
 #define PORT 20000 
 #define MY_QUEUE 5//num of clients in the connection queue
 #define MaxUserCount 10//limit of Users
-#define MESSAGE_LENGTH 1024 // Максимальный размер буфера для данных
+#define MESSAGE_LENGTH 1024 // РњР°РєСЃРёРјР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ Р±СѓС„РµСЂР° РґР»СЏ РґР°РЅРЅС‹С…
 char ch_message[MESSAGE_LENGTH];
 
 struct sockaddr_in serveraddress, client;
@@ -81,7 +81,7 @@ int main()
     listen(sListen, SOMAXCONN);
 #else
 
-    // Создадим сокет
+    // РЎРѕР·РґР°РґРёРј СЃРѕРєРµС‚
     socket_file_descriptor = socket(AF_INET, SOCK_STREAM, 0);
     if (socket_file_descriptor == -1)
     {
@@ -95,11 +95,11 @@ int main()
         exit(EXIT_FAILURE);
     }
     serveraddress.sin_addr.s_addr = htonl(INADDR_ANY);
-    // Зададим номер порта для связи
+    // Р—Р°РґР°РґРёРј РЅРѕРјРµСЂ РїРѕСЂС‚Р° РґР»СЏ СЃРІСЏР·Рё
     serveraddress.sin_port = htons(PORT);
-    // Используем IPv4
+    // РСЃРїРѕР»СЊР·СѓРµРј IPv4
     serveraddress.sin_family = AF_INET;
-    // Привяжем сокет
+    // РџСЂРёРІСЏР¶РµРј СЃРѕРєРµС‚
     bind_status = bind(socket_file_descriptor, (struct sockaddr*)&serveraddress,
         sizeof(serveraddress));
     if (bind_status == -1)
@@ -107,7 +107,7 @@ int main()
         cout << "Socket binding failed.!" << endl;
         exit(1);
     }
-    // Поставим сервер на прием данных 
+    // РџРѕСЃС‚Р°РІРёРј СЃРµСЂРІРµСЂ РЅР° РїСЂРёРµРј РґР°РЅРЅС‹С… 
     connection_status = listen(socket_file_descriptor, MY_QUEUE);
     if (connection_status == -1)
     {
@@ -384,36 +384,49 @@ int main()
             }
             break;
         }
-        case 4://individusl message
+        case 4://individual message
         {
 
-            string n;//stores name of friend
+            string l;//stores login of friend
             while (1)
             {                
                 my_send(ss.str() + "Enter the login of your friend", connection);
                 ss.str("");
-                n = my_receive(connection);
-                if (check_login(n))
+                l = my_receive(connection);
+                if (check_login(l))//// and his connection is active! 
                 break;
                 ss << "unregistered user, try again\n";
             }
 
-            my_send("text your message to " + n, connection);
+            my_send("text your message to " + l, connection);
             string m = my_receive(connection);//receives message
 
-            ERR = store_mes(get_login(UC, connection), n, m);
+            ERR = store_mes(get_login(UC, connection), l, m);
             if (ERR)
             {
                 cout << "Error of store_mes\n";
-            }
+            }   
+                
 
-            map<int, string >::iterator it;
-            for (it = UC.begin(); it != UC.end(); ++it)
-                if (it->second == n)
-                    connection = it->first;    
 
-            my_send(m + "\nENTER SPACE to continue", connection);
-            my_receive(connection);
+           
+            map<int, string >::iterator it = UC.find(get_con(UC, l));            
+            if (it == UC.end())
+                {
+                    ss << "User is offline, message was stored\n";
+                    my_send(ss.str() + "\nENTER SPACE to continue", connection);
+                    my_receive(connection);
+                }
+            else
+                {
+                    connection = it->first;
+                    my_send(m + "\nENTER SPACE to continue", connection);
+                    my_receive(connection);
+                }      
+                
+            
+
+            
         }
         choice = 3;
         break;
@@ -483,17 +496,13 @@ int main()
             my_send("# BYE!", connection);            
             for (int i = 0; i < connections.size(); i++)
             {
-                if (connections[i] == connection && i < connections.size() - 1)
+                
+                if (connections[i] == connection)
                 {
-                    closesocket(connection);
-                    connections.erase(connections.begin() + i);
-                    if (connections.size() > 1) i++;
-                    connection = connections[i];
-                    choice = 3;
-                    break;
-                }
-                else if (connections[i] == connection && i == connections.size() - 1)
-                {
+                    map<int, string >::iterator it;
+                    it = UC.find(connection);
+                    UC.erase(it);
+
                     closesocket(connection);
                     connections.erase(connections.begin() + i);
                     connection = connections[0];
@@ -533,5 +542,7 @@ int main()
     mysql_close(&mysql);
     return 0;
 }
+
+
 
 
