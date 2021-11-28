@@ -7,3 +7,4 @@ bool compare_LP(string LP, string L, string P);
 void my_send(string _mes, int connection);
 string my_receive(int connection);
 string get_login(map<int, string>UC, int connection);
+int get_con(map<int, string>UC, string login);
